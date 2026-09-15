@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="纯本地浏览器 EVM 靓号地址生成器">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self'; connect-src 'none'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+    <title>Vanity Forge · EVM 靓号生成器</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div class="eyebrow"><span class="pulse"></span> LOCAL COMPUTE / EVM</div>
+        <h1>找到你的 <em>靓号</em>。</h1>
+        <p class="lede">在你的浏览器里生成 EVM 地址。私钥只存在于当前页面和 Worker 内存，不经过服务器。</p>
+        <div class="trust-row" aria-label="安全说明">
+          <span>⌁ Web Crypto 随机源</span>
+          <span>⌁ Web Worker 并行</span>
+          <span>⌁ 无 API / 无分析</span>
+        </div>
+      </header>
+
+      <section class="panel controls-panel" aria-labelledby="controls-title">
+        <div class="panel-heading">
+          <div>
+            <div class="section-kicker">01 / DEFINE</div>
+            <h2 id="controls-title">定义你的靓号</h2>
+          </div>
+          <div class="estimate" id="estimate" aria-live="polite">输入目标后显示难度</div>
+        </div>
+
+        <form id="search-form">
+          <div class="form-grid">
+            <label class="field field-wide">
+              <span>匹配位置</span>
+              <select id="match-position">
+                <option value="prefix">地址开头</option>
+                <option value="suffix">地址结尾</option>
+              </select>
+            </label>
+            <label class="field field-target">
+              <span>目标字符 <small>不含 0x · 仅 0-9 a-f</small></span>
+              <input id="target" name="target" inputmode="text" autocomplete="off" spellcheck="false" maxlength="14" placeholder="例如 8888" value="8888" required>
+              <span class="input-prefix" aria-hidden="true">0x</span>
+            </label>
+          </div>
+
+          <div class="advanced-row">
+            <label class="field workers-field">
+              <span>并行 Worker <output id="workers-value">4</output></span>
+              <input id="workers" type="range" min="1" max="16" value="4">
+            </label>
+            <p class="hint">每多匹配 1 个字符，平均难度增加 16 倍。4 位目标通常适合演示；更长目标可能需要很久。</p>
+          </div>
+
+          <div class="actions">
+            <button class="button button-primary" id="start" type="submit">开始计算 <span>↗</span></button>
+            <button class="button button-secondary" id="stop" type="button" disabled>停止</button>
+          </div>
+        </form>
+        <p class="error" id="error" role="alert" hidden></p>
+      </section>
+
+      <section class="panel progress-panel" aria-labelledby="progress-title">
+        <div class="panel-heading compact">
+          <div>
+            <div class="section-kicker">02 / COMPUTE</div>
+            <h2 id="progress-title">计算进度</h2>
+          </div>
+          <div class="status-badge" id="status-badge"><span class="status-dot"></span><span id="status-text">待机</span></div>
+        </div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="stats-grid">
+          <div class="stat"><span>已尝试</span><strong id="attempts">0</strong></div>
+          <div class="stat"><span>速度</span><strong id="rate">—</strong></div>
+          <div class="stat"><span>预计平均</span><strong id="eta">—</strong></div>
+        </div>
+        <p class="progress-note" id="progress-note">准备好后点击开始。页面关闭或刷新会清除本次计算状态。</p>
+      </section>
+
+      <section class="panel result-panel" id="result-panel" aria-labelledby="result-title" hidden>
+        <div class="panel-heading compact">
+          <div>
+            <div class="section-kicker">03 / FOUND</div>
+            <h2 id="result-title">找到一个匹配地址</h2>
+          </div>
+          <div class="found-mark">✓ FOUND</div>
+        </div>
+        <div class="result-block">
+          <span>地址</span>
+          <div class="value-row"><code id="result-address"></code><button class="copy-button" data-copy="result-address" type="button">复制</button></div>
+        </div>
+        <div class="result-block private-block">
+          <span>私钥 <small>请离线保存，永远不要发送给任何人</small></span>
+          <div class="value-row"><code id="result-private" class="secret masked"></code><button class="copy-button" id="reveal-private" type="button">显示</button><button class="copy-button" data-copy="result-private" type="button">复制</button></div>
+        </div>
+        <p class="warning">这是一个新生成的密钥对。使用前请自行核对地址，并先用小额资金验证。靓号生成器不会替你保管私钥。</p>
+      </section>
+
+      <footer class="footer">
+        <span>Vanity Forge / client-side only</span>
+        <a href="./README.md">部署说明</a>
+      </footer>
+    </main>
+  </body>
+</html>
